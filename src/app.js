@@ -24,6 +24,29 @@ exhibitorMatchApp = angular.module("exhibitorMatchApp", ['ngRoute'])
 	};
 }])
 //----------------------------------//
+
+//----------------------------------//
+//  filter by checked exhibitors    //
+//----------------------------------//
+.filter('linesFilter', function() {
+    return function(lines, exhibitors) {
+    	console.log('----------------');
+    	console.log('. running the filter .');
+    	console.log(lines);
+    	console.log(exhibitors);
+    	var lines = [];
+    	lines.forEach(function(line) {
+    		exhibitors.forEach(function(exhibitor) {
+    			if (exhibitor == line.id) {
+    				lines.push(line);
+    			}
+    		});
+    	});
+    	return lines;
+    };
+})
+//----------------------------------//
+
 //-----------------------------------------------------------------------//
 //      controller to sends AJAX request and returns it to the view      //
 //-----------------------------------------------------------------------//
@@ -31,107 +54,36 @@ exhibitorMatchApp = angular.module("exhibitorMatchApp", ['ngRoute'])
 
 	var vm = this;
 
-	var outputExhibitor = function(exhibitor, link=true) {
-		if (link) {
-			return '<li><a href="' + exhibitor.link + '"><p>' + exhibitor.showroomName + '</p></a></li>\\n';
-		}
-		else {
-			return '<li><p>' + exhibitor.showroomName + '</p></li>\\n';
-		}
-	}
-
-	vm.matchExhibitors = function(keywords) {
-		console.log(vm.exhibitors);
-		vm.matchedExhibitors = [];
-		vm.unmatchedExhibitors = [];
-		vm.allExhibitors = [];
-		vm.outputText = '';
-		vm.noLinkOutputText = '';
-
-		keywords = keywords.split('\n').map(function(keyword) {
-			keyword = keyword.replace('Blus ', 'Blush ')
-							 .replace('APlus', 'A Plus')
-							 .replace(/[\u2018\u2019]/g, "'")
-							 .replace(/[\u201C\u201D]/g, '"')
-							 .replace('Desing', 'Design')
-							 .replace(' by Alexia','')
-							 .trim();
-			return keyword;
-		}).join('\n');
-
-		keywords.split('\n').forEach(function(keyword) {
-			var original_keyword = keyword;
-			var guess = vm.exhibitors.find(x => x.showroomName.replace('and', '&').toLowerCase() == keyword.trim().toLowerCase());
-
-			if (!guess) {
-				guess = vm.exhibitors.find(x => x.showroomName.trim().toLowerCase().replace('and', '&').includes(keyword.trim().toLowerCase()));
-			}
-
-			if (!guess) {
-				var possibilities = []
-				var found = false;
-				vm.exhibitors.forEach(function(exhibitor) {
-					if (exhibitor.showroomName.toLowerCase()
-											  .replace(/[\u2018\u2019]/g, "'")
-  											  .replace(/[\u201C\u201D]/g, '"').includes(keyword.trim()
-  											  												   .split()[0]
-  											  												   .toLowerCase()
-  											  												   .replace(/[\u2018\u2019]/g, "'")
-  											  												   .replace(/[\u201C\u201D]/g, '"'))) {
-						possibilities.push(exhibitor);
-						found = true;
-					}
+	vm.updateLines = function(exhibitors) {
+		var lines = [];
+		exhibitors.forEach(function(exhibitor) {
+			if (exhibitor.selected) {
+				exhibitor.productLines.forEach(function(line) {
+					lines.push({
+						line: line.description, 
+						id: exhibitor.exhibitorID});
 				});
-				if (!found) {
-					console.log('>>>>> did not find ' + keyword);
-					vm.unmatchedExhibitors.push({keyword: keyword});
-					vm.outputText += outputExhibitor({showroomName: 'FIX: ' + keyword, exhibitorID: 0});
-					vm.allExhibitors.push({keyword: original_keyword, showroomName: keyword, link: "https://www.americasmart.com/browse/#/search?q=" + keyword.trim().toLowerCase()});
-				}
-				else {
-					if (possibilities.length > 1) {
-						console.log('positibilities for ' + showroomName + ' ' + possibilities);
-					}
-					else {
-						guess = possibilities[0];
-						possibilities[0].showroomName = original_keyword;
-						possibilities[0].keyword = keyword;
-						possibilities[0].link = 'https://www.americasmart.com/browse/#/exhibitor/' + possibilities[0].exhibitorID;
-						vm.outputText += outputExhibitor(possibilities[0]);
-						vm.allExhibitors.push(possibilities[0]);
-					}
-				}
-			}
-			else {
-				guess.keyword = keyword;
-				guess.link = 'https://www.americasmart.com/browse/#/exhibitor/' + guess.exhibitorID;
-				vm.matchedExhibitors.push(guess);
-				guess.showroomName = original_keyword;
-				vm.allExhibitors.push(guess);
-				vm.outputText += outputExhibitor(guess);
 			}
 		});
-		vm.outputText = vm.allExhibitors.sort(function(a, b) {
-			if (a.showroomName > b.showroomName) { return 1; }
-			if (a.showroomName < b.showroomName) { return -1; }
-			return 0;
-		}).map(function(exhibitor) {
-			return outputExhibitor(exhibitor);
-		}).join('');
-		vm.noLinkOutputText = vm.allExhibitors.sort(function(a, b) {
-			if (a.showroomName > b.showroomName) { return 1; }
-			if (a.showroomName < b.showroomName) { return -1; }
-			return 0;
-		}).map(function(exhibitor) {
-			return outputExhibitor(exhibitor, false);
-		}).join('');
-	}
+		vm.lines = lines;
+		console.log(lines.length+ ' lines');
+	};
 
-	var list = ""
-
-	// get employee information from WEM database
-	getRequest.getData("https://wem.americasmart.com/api/search/exhibitor").then(function(exhibitors) {
-		vm.exhibitors = exhibitors;
+	// get exhibitor information for this market from WEM
+	getRequest.getData("https://dev.americasmart.com/api/v1.2/Search/LinesAndPhotosByMarket?status=ACTIVE_AND_UPCOMING&marketID=26").then(function(exhibitors) {
+		var lines = [];
+		vm.exhibitors = exhibitors.map(function(exhibitor) {
+			exhibitor.selected = false;
+			return exhibitor;
+		});
+		vm.exhibitors.forEach(function(exhibitor) {
+			exhibitor.productLines.forEach(function(line) {
+				lines.push({
+					line: line.description, 
+					id: exhibitor.exhibitorID});
+			});
+		});
+		vm.lines = lines;
 	});
 }]);
 //-----------------------------------------------------------------------//
