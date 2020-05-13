@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<!-- current angularjs (not for long though I'm sure)  -->
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.7.8/angular.js"></script>
+	<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/angularjs/1.7.8/angular-route.min.js"></script>
+
+	<!-- customized styling -->
+	<link rel="stylesheet" type="text/css" href="https://www.americasmart.com/hubfs/www/includes/css/styles.css">
+
+	<!-- customized script -->
+	<script src="src/app.js"></script>
+  <style>
+  	.column {
+  		display: inline-block;
+  		float: left;
+  		margin-top: 0;
+  	}
+  	ul li div input[type="text"] {
+  		font-size: 1em !important;
+  		height: 1.25em;
+  		padding: 0;
+  		margin: 0;
+  		background-color: #ddd;
+  	}
+  	ul li:nth-child(odd) div input[type="text"] {
+  		background-color: #eee;
+  	}
+  </style>
+</head>
+<body ng-app="exhibitorMatchApp">
+	<div class="grid-wrapper gray-0-bg">
+		<div class="grid-contaier margin-four">
+			<div class="page-1" ng-controller="exhibitorMatchController as vm">
+				<div class="column four align-center" style="display: inline-block; float: left;">
+					<textarea ng-model="desiredExhibitors" placeholder="paste list of exhibitors here" style="resize: vertical;"></textarea>
+					<div class="bttn grey size-200" ng-click="vm.matchExhibitors(desiredExhibitors)">Match Exhibitors</div>
+				</div>
+				<div class="column four" style="display: inline-block; float: left; margin-top: 0;">
+					<div style="padding: 1em; min-height: 4em;" ng-if="vm.unmatchedExhibitors.length > 1">
+						<ul>
+							<li>
+								<div class="column four align-center bold">Unmatched Exhibitors</div>
+								<div class="column four align-center bold">Select Exhibitors</div>
+							</li>
+							<li ng-repeat="exhibitor in vm.unmatchedExhibitors track by $index">
+								<div class="column four align-center">//exhibitor.keyword//</div>
+								<div class="column two align-center"><input type="text" ng-click="searchByNumber()"></div>
+								<div class="column two align-center"><div style="padding: 0; margin: 0; font-size: 1em;" class="bttn grey" ng-click="vm.matchExhibitors(desiredExhibitors)">Match</div></div>
+							</li>
+						</ul>
+					</div>
+					<div style="padding: 1em; min-height: 4em;" ng-if="vm.matchedExhibitors.length > 1">
+						<ul>
+							<li>
+								<div class="column four align-center bold">Exhibitor Name</div>
+								<div class="column four align-center bold">Found Name</div>
+							</li>
+							<li ng-repeat="exhibitor in vm.matchedExhibitors track by $index">
+								<div class="column four align-center">//exhibitor.keyword//</div>
+								<div class="column four align-center">//exhibitor.showroomName//</div>
+							</li>
+						</ul>
+					</div>
+				</div>
+				<div ng-if="vm.outputText != ''" class="column eight align-center" ><h4>Listing w/ Links</h4></div>
+				<div ng-if="vm.outputText != ''" class="column eight align-center" style="display: inline-block; float: left;">
+					//vm.outputText//
+				</div>
+				<div ng-if="vm.noLinkOutputText != ''" class="column eight align-center" ><h4>Listing w/out Links</h4></div>
+				<div ng-if="vm.noLinkOutputText != ''" class="column eight align-center" style="display: inline-block; float: left;">
+					//vm.noLinkOutputText//
+				</div>
+			</div>
+		</div>
+	</div>
+</body>
+
+</html>
