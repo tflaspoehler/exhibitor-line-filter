@@ -83,7 +83,7 @@ exhibitorMatchApp = angular.module("exhibitorMatchApp", ['ngRoute'])
 					id: exhibitor.exhibitorID});
 			});
 		});
-		vm.lines = lines;
+		vm.lines = [];
 	});
 }]);
 //-----------------------------------------------------------------------//
