@@ -4,9 +4,10 @@ exhibitorMatchApp = angular.module("exhibitorMatchApp", ['ngRoute'])
 // change scope templating string to insert angular stuff from ${} to    //
 //       without this hubspot will not play nice with angular            //
 //-----------------------------------------------------------------------//
-.config(['$interpolateProvider', function($interpolateProvider) {
+.config(['$interpolateProvider', '$compileProvider', function($interpolateProvider, $compileProvider) {
 	$interpolateProvider.startSymbol('//');
 	$interpolateProvider.endSymbol('//');
+	$compileProvider.aHrefSanitizationWhitelist(/^\s*(hhttps?|ftp|mailto|file|tel|amc|data):/);
 }])
 //-------------------------------------------------------------------//
 
@@ -56,17 +57,23 @@ exhibitorMatchApp = angular.module("exhibitorMatchApp", ['ngRoute'])
 
 	vm.updateLines = function(exhibitors) {
 		var lines = [];
-		exhibitors.forEach(function(exhibitor) {
-			if (exhibitor.selected) {
-				exhibitor.productLines.forEach(function(line) {
-					lines.push({
-						line: line.description, 
-						id: exhibitor.exhibitorID});
-				});
-			}
-		});
-		vm.lines = lines;
-		console.log(lines.length+ ' lines');
+		if (exhibitors.length > 1) {
+			exhibitors.forEach(function(exhibitor) {
+				if (exhibitor.selected) {
+					exhibitor.productLines.forEach(function(line) {
+						lines.push({
+							line: line.description, 
+							id: exhibitor.exhibitorID});
+					});
+				}
+			})
+			lines = lines.sort(function(a, b) {
+				return (a.line.toLowerCase() > b.line.toLowerCase()) ? 1 : -1;
+			});
+			vm.lines = lines;
+			vm.url = encodeURIComponent(vm.lines.map(function(line) {return line.line;}).join("\n"));
+			console.log(lines.length+ ' lines');
+		}
 	};
 
 	// get exhibitor information for this market from WEM
@@ -84,6 +91,7 @@ exhibitorMatchApp = angular.module("exhibitorMatchApp", ['ngRoute'])
 			});
 		});
 		vm.lines = [];
+		vm.url = 'data:text/plain;charset=utf-8,' + encodeURIComponent(vm.lines.map(function(line) {return line.line;}).join("\n"));
 	});
 }]);
 //-----------------------------------------------------------------------//
