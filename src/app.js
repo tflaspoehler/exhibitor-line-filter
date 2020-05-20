@@ -57,9 +57,20 @@ exhibitorMatchApp = angular.module("exhibitorMatchApp", ['ngRoute'])
 
 	vm.updateLines = function(exhibitors) {
 		var lines = [];
+		var selections = [[
+						'ID',
+						'Showroom',
+						'Booth Location',
+						'Lines'].join('\t')];
 		if (exhibitors.length > 1) {
 			exhibitors.forEach(function(exhibitor) {
 				if (exhibitor.selected) {
+					selections.push([
+						exhibitor.exhibitorID,
+						exhibitor.showroomName,
+						'B'+exhibitor.booths[0].building+'-'+exhibitor.booths[0].floorNum+'-'+exhibitor.booths[0].title,
+						exhibitor.productLines.map(function(line) {return line.description}).join(', '),
+					].join('\t'));
 					exhibitor.productLines.forEach(function(line) {
 						lines.push({
 							line: line.description, 
@@ -71,7 +82,7 @@ exhibitorMatchApp = angular.module("exhibitorMatchApp", ['ngRoute'])
 				return (a.line.toLowerCase() > b.line.toLowerCase()) ? 1 : -1;
 			});
 			vm.lines = lines;
-			vm.url = encodeURIComponent(vm.lines.map(function(line) {return line.line;}).join("\n"));
+			vm.url = encodeURIComponent(selections.join("\n"));
 			console.log(lines.length+ ' lines');
 		}
 	};
