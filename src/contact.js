@@ -55,15 +55,12 @@ exhibitorMatchApp = angular.module("exhibitorMatchApp", ['ngRoute'])
 
 	var vm = this;
 
-
 	vm.updateLines = function(exhibitors) {
 		var lines = [];
 		var selections = [[
 						'ID',
 						'Showroom',
 						'Booth Location',
-						'Email',
-						'Phone',
 						'Lines'].join('\t')];
 		if (exhibitors.length > 1) {
 			exhibitors.forEach(function(exhibitor) {
@@ -72,8 +69,6 @@ exhibitorMatchApp = angular.module("exhibitorMatchApp", ['ngRoute'])
 						exhibitor.exhibitorID,
 						exhibitor.showroomName,
 						'B'+exhibitor.booths[0].building+'-'+exhibitor.booths[0].floorNum+'-'+exhibitor.booths[0].title,
-						exhibitor.email,
-						exhibitor.phone,
 						exhibitor.productLines.map(function(line) {return line.description}).join(', '),
 					].join('\t'));
 					exhibitor.productLines.forEach(function(line) {
@@ -95,12 +90,8 @@ exhibitorMatchApp = angular.module("exhibitorMatchApp", ['ngRoute'])
 	// get exhibitor information for this market from WEM
 	getRequest.getData("https://dev.americasmart.com/api/v1.2/Search/LinesAndPhotosByMarket?status=ACTIVE_AND_UPCOMING&marketID=26").then(function(exhibitors) {
 		var lines = [];
-		vm.loading = true;
 		vm.exhibitors = exhibitors.map(function(exhibitor) {
 			exhibitor.selected = false;
-			exhibitor.phone = "-";
-			exhibitor.email = "-";
-			exhibitor.done = false;
 			return exhibitor;
 		});
 		vm.exhibitors.forEach(function(exhibitor) {
@@ -112,29 +103,6 @@ exhibitorMatchApp = angular.module("exhibitorMatchApp", ['ngRoute'])
 		});
 		vm.lines = [];
 		vm.url = 'data:text/plain;charset=utf-8,' + encodeURIComponent(vm.lines.map(function(line) {return line.line;}).join("\n"));
-		// pull emails and stuffffffff
-		vm.exhibitors.forEach(function(exhibitor, eindex) {
-			getRequest.getData("https://wem.americasmart.com/api/Exhibitor?exhibitorID="+exhibitor.exhibitorID).then(function(data) {
-				var alldone = true;
-				console.log(data);
-				vm.exhibitors[eindex].phone = data.officePhone;
-				if (data.contacts.length > 0) {
-					vm.exhibitors[eindex].email = data.contacts[0].email;
-				} else {
-					vm.exhibitors[eindex].email = "-";
-				}
-				vm.exhibitors[eindex].done = true; 
-				vm.exhibitors.forEach(function(ex) {
-					if (ex.done == false) {
-						alldone = false;
-					}
-				});
-				if (alldone = true) {
-					vm.loading = false;
-				}
-			});
-		});
 	});
-
 }]);
 //-----------------------------------------------------------------------//

@@ -19,7 +19,7 @@
 <body ng-app="exhibitorMatchApp">
 	<div class="grid-wrapper gray-0-bg" ng-controller="exhibitorMatchController as vm">
 		<div class="column eight">
-			<div class="text-header-2">Exhibitors <span ng-if="!vm.loading">(<i>loading contact info</i>)</span></div>
+			<div class="text-header-2">Exhibitors</div>
 			<ul class="category-list split-list four">
 				<li ng-repeat="exhibitor in vm.exhibitors | orderBy: 'showroomName' track by $index">
 					<label for="//exhibitor.exhibitorID//" class="width-100"><input type="checkbox" id="//exhibitor.exhibitorID//" value="//exhibitor.exhibitorID//" name="vm.exAll" ng-change="vm.updateLines(vm.exhibitors)" ng-model="exhibitor.selected">// exhibitor.showroomName //</label>
